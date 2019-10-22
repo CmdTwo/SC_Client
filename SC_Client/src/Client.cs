@@ -9,49 +9,54 @@ using System.Runtime.Serialization.Formatters.Binary;
 using SC_Common;
 using SC_Common.Enum;
 
-//debug
-using System.Windows.Controls;
-using System.Windows.Threading;
-
 namespace SC_Client.src
 {
     internal sealed class Client
-    {      
-        //DEBUG
-        public TextBox debugBox;
-
+    {
         private int ServerPort;
         private IPAddress ServerIP;
         private IPEndPoint ServerEndPoint;
         private Socket Handler;
         private PackageManager PackageManag;
 
+        public event Action<bool> ConnectionStatusHasChange;
+        public event Action HasAdmitted;
+        public event Action<string, string> NewMessage;
+        public event Action<string, bool> UserConnectionAction; //TEMP
+
+        public int LocalID { get; private set; }
+        public string LocalNickname { get; private set; }
+
         public Client()
         {
             PackageManag = new PackageManager();
         }
 
-        public void Connect()
+        public void Connect(string ip, int port)
         {
-            ServerIP = IPAddress.Parse("192.168.100.5");
-            ServerPort = 25252;
+            ServerIP = IPAddress.Parse(ip);
+            ServerPort = port;
 
             ServerEndPoint = new IPEndPoint(ServerIP, ServerPort);
             Handler = new Socket(ServerIP.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            bool status = false;
 
-            Handler.Connect(ServerEndPoint);
-            PackageArgs package = new PackageArgs()
+            try
             {
-                PackageType = PackageType.Command,
-                Command = Command.User_Setup,
-                Arguments = new Dictionary<Argument, object>()
-                {
-                    { Argument.UserID, 2 },
-                    { Argument.Value, 2 }
-                }
-            };
+                Handler.Connect(ServerEndPoint);
+                status = true;
+            }
+            catch (SocketException)
+            {
+                status = false;
+                return;
+            }
+            finally
+            {
+                ConnectionStatusHasChange?.Invoke(status);
+            }
 
-            PackageManag.SendPackage(Handler, package, SendCallback);
+            PackageManag.ReceivePackage(Handler, ReceiveCallback);
         }
 
         public void Disconnect()
@@ -62,35 +67,96 @@ namespace SC_Client.src
                 Command = Command.Exit,
                 Arguments = null
             };
-
-            PackageManag.SendPackage(Handler, package, SendCallback);         
+            PackageManag.SendPackage(Handler, package, DisconnectHandler);         
         }
 
-        private void HasDisconnected()
+        private void ReceiveCallback(Socket user, PackageArgs package)
         {
-            Handler.Shutdown(SocketShutdown.Both);
-            Handler.Close();
+            if (package.PackageType == PackageType.Event)
+            {
+                switch (package.Event)
+                {
+                    case (Event.New_Message): NewMessageEventHandler(package); break;
+                    case (Event.User_Left): UserConnectionAction(package.Arguments[Argument.Nickname] as string, false); break; //TEMP
+                    case (Event.New_User): UserConnectionAction(package.Arguments[Argument.Nickname] as string, true); break; //TEMP
+                }
+            } else {
+                switch (package.Command)
+                {
+                    case (Command.User_Setup): SetupResponse(package); break;
+                    default: break;
+                }
+            }
+
+            PackageManag.ReceivePackage(Handler, ReceiveCallback);
         }
 
-        public void SendTestData()
+        #region Event
+
+        private void NewMessageEventHandler(PackageArgs package)
+        {
+            NewMessage?.Invoke(
+                package.Arguments[Argument.Message] as string,
+                package.Arguments[Argument.Nickname] as string
+                );
+        }
+
+        #endregion
+
+        #region Response
+
+        private void SetupResponse(PackageArgs package)
+        {
+            LocalID = (int)package.Arguments[Argument.UserID];
+            LocalNickname = package.Arguments[Argument.Nickname] as string;
+
+            HasAdmitted?.Invoke();
+        }
+
+
+        #endregion
+
+        #region Callback
+
+        private void DisconnectHandler(Socket handler, int packageHash, bool status)
+        {
+            handler.Shutdown(SocketShutdown.Both);
+            handler.Close();
+        }
+
+        #endregion
+
+        #region API
+
+        public void SetNickAndContinue(string nickName)
         {
             PackageArgs package = new PackageArgs()
             {
                 PackageType = PackageType.Command,
                 Command = Command.User_Setup,
-                Arguments = new Dictionary<Argument, object>()
+                Arguments = new Dictionary<Argument, object>
                 {
-                    { Argument.UserID, 2 },
-                    { Argument.Value, 2 }
+                    { Argument.Nickname, nickName }
                 }
             };
-
-            PackageManag.SendPackage(Handler, package, SendCallback);   
+            PackageManag.SendPackage(Handler, package, null);
         }
 
-        private void SendCallback(Socket handler, int packageHash, bool status)
+        public void SendMessage(string message)
         {
+            PackageArgs package = new PackageArgs()
+            {
+                PackageType = PackageType.Command,
+                Command = Command.Send_Message,
+                Arguments = new Dictionary<Argument, object>
+                {
+                    { Argument.Message, message },
+                    { Argument.Nickname, LocalNickname }
+                }
+            };
+            PackageManag.SendPackage(Handler, package, null);
+        }
 
-        }          
+        #endregion
     }
 }
