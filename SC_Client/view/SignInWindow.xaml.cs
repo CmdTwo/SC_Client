@@ -26,6 +26,8 @@ namespace SC_Client.view
 
         public SignInWindow()
         {
+            SC_Common.Register.IsActive = false;
+
             InitializeComponent();
             Closing += SignInWindow_Closing;
 

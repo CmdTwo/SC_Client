@@ -29,7 +29,7 @@ namespace SC_Client.control
             if (from != null)
                 From.Text = from + " said:";
             else
-                From.Visibility = Visibility.Hidden;
+                From.Visibility = Visibility.Collapsed;
         }
 
         public static MessageReceived Generate(string message, string from = null)

@@ -5,10 +5,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SC_Client.control"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignWidth="800">
     <Grid>
-        <Border Background="{StaticResource MaterialDesignBody}" CornerRadius="15, 15, 15, 15" Margin="10, 15">
-            <TextBlock Name="MessageText" Margin="15" TextWrapping="Wrap" Text="Hello world" Foreground="White" FontSize="9"/>
-        </Border>
+        <StackPanel>
+            <Border Background="{StaticResource MaterialDesignBody}" CornerRadius="15, 15, 15, 15" Margin="5">
+                <TextBlock Name="MessageText" Margin="10" TextWrapping="Wrap" Text="Hello world" Foreground="White" FontSize="9"/>
+            </Border>
+        </StackPanel>
     </Grid>
 </UserControl>
