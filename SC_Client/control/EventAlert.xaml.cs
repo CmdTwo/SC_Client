@@ -20,14 +20,22 @@ namespace SC_Client.control
     /// </summary>
     public partial class EventAlert : UserControl
     {
-        public EventAlert(string message, bool temp)
+        public EventAlert(string user, bool conntectionStatus)
         {
             InitializeComponent();
             HorizontalAlignment = HorizontalAlignment.Left;
 
-            MessageText.Text = (temp) 
-                ? "User " + message + " has joined!" 
-                : "User " + message + " has left!";
+            MessageText.Text = (conntectionStatus) 
+                ? "User " + user + " has joined!" 
+                : "User " + user + " has left!";
+        }
+
+        public EventAlert(string message)
+        {
+            InitializeComponent();
+            HorizontalAlignment = HorizontalAlignment.Left;
+
+            MessageText.Text = message;
         }
     }
 }

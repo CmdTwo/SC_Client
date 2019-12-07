@@ -8,6 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 using SC_Common;
 using SC_Common.Enum;
+using SC_Common.Messages;
 
 namespace SC_Client.src
 {
@@ -23,6 +24,8 @@ namespace SC_Client.src
         public event Action HasAdmitted;
         public event Action<string, string> NewMessage;
         public event Action<string, bool> UserConnectionAction; //TEMP
+
+        private Action<List<ChatMessage>> OutHandler;
 
         public int LocalID { get; private set; }
         public string LocalNickname { get; private set; }
@@ -77,13 +80,17 @@ namespace SC_Client.src
                 switch (package.Event)
                 {
                     case (Event.New_Message): NewMessageEventHandler(package); break;
-                    case (Event.User_Left): UserConnectionAction(package.Arguments[Argument.Nickname] as string, false); break; //TEMP
-                    case (Event.New_User): UserConnectionAction(package.Arguments[Argument.Nickname] as string, true); break; //TEMP
+                    case (Event.User_Left): UserConnectionAction(
+                        package.Arguments[Argument.UserName] as string, false); break; //TEMP
+                    case (Event.New_User): UserConnectionAction(
+                        package.Arguments[Argument.UserName] as string, true); break; //TEMP
                 }
             } else {
                 switch (package.Command)
                 {
                     case (Command.User_Setup): SetupResponse(package); break;
+                    case (Command.Get_Last_Messages): OutHandler?.Invoke
+                            (package.Arguments[Argument.MessageList] as List<ChatMessage>); break;
                     default: break;
                 }
             }
@@ -97,7 +104,7 @@ namespace SC_Client.src
         {
             NewMessage?.Invoke(
                 package.Arguments[Argument.Message] as string,
-                package.Arguments[Argument.Nickname] as string
+                package.Arguments[Argument.UserName] as string
                 );
         }
 
@@ -108,11 +115,10 @@ namespace SC_Client.src
         private void SetupResponse(PackageArgs package)
         {
             LocalID = (int)package.Arguments[Argument.UserID];
-            LocalNickname = package.Arguments[Argument.Nickname] as string;
+            LocalNickname = package.Arguments[Argument.UserName] as string;
 
             HasAdmitted?.Invoke();
         }
-
 
         #endregion
 
@@ -136,7 +142,7 @@ namespace SC_Client.src
                 Command = Command.User_Setup,
                 Arguments = new Dictionary<Argument, object>
                 {
-                    { Argument.Nickname, nickName }
+                    { Argument.UserName, nickName }
                 }
             };
             PackageManag.SendPackage(Handler, package, null);
@@ -150,9 +156,19 @@ namespace SC_Client.src
                 Command = Command.Send_Message,
                 Arguments = new Dictionary<Argument, object>
                 {
-                    { Argument.Message, message },
-                    { Argument.Nickname, LocalNickname }
+                    { Argument.MessageObj, new UserMessage(LocalID, LocalNickname, message) }
                 }
+            };
+            PackageManag.SendPackage(Handler, package, null);
+        }
+
+        public void GetLastMessages(Action<List<ChatMessage>> handler)
+        {
+            OutHandler = handler;
+            PackageArgs package = new PackageArgs()
+            {
+                PackageType = PackageType.Command,
+                Command = Command.Get_Last_Messages
             };
             PackageManag.SendPackage(Handler, package, null);
         }

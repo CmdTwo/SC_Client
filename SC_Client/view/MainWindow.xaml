@@ -6,9 +6,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:control="clr-namespace:SC_Client.control"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="400">
-    <Grid Background="{DynamicResource MaterialDesignBody}">
-        <Grid Background="White">
+        Title="Simple Chat" Height="600" Width="400"
+        Closed="Window_Closed">
+    <Grid Background="{DynamicResource MaterialDesignBackground}">
+        <Grid>
             <StackPanel Name="MessageContainer" Margin="0, 75" VerticalAlignment="Bottom">
             </StackPanel>
             <Border Background="{DynamicResource MaterialDesignPaper}" VerticalAlignment="Bottom">

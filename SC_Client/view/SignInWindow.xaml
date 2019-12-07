@@ -5,22 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SC_Client.view"
         mc:Ignorable="d"
-        Title="Sign In" Height="500" Width="300" FontSize="14">
+        Title="Sign In" Height="510" Width="300" FontSize="14"
+        ResizeMode="NoResize"
+        Foreground="{StaticResource PrimaryHueLightForegroundBrush}"
+        Background="{StaticResource MaterialDesignBackground}">
     <StackPanel>
-        <Image Source="/SC_Client;component/img/logo.png" Margin="60, 60, 60, 30"/>
-        <StackPanel Name="ConnectPanel"  Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200">
+        <Border Background="{StaticResource PrimaryHueMidBrush}" CornerRadius="30, 30, 0, 30" Height="200" Width="200" Margin="30, 40, 30, 30">
+            <TextBlock Foreground="{StaticResource PrimaryHueDarkForegroundBrush}" FontSize="140" Text="S" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        </Border>
+        <StackPanel Name="ConnectPanel" Margin="20" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200">
             <StackPanel Margin="10">
-                <TextBlock Text="Server IP : Port" TextAlignment="Center" Foreground="Gray"/>
+                <TextBlock Text="Server IP : Port" TextAlignment="Center"/>
                 <TextBox Name="ServerAddressInput" Margin="0, 3, 0, 0" TextAlignment="Center"/>
             </StackPanel>
-            <Button Content="Enter" Width="100" Margin="30" Click="ConnectButton_Click"/>
+            <Button Content="Enter" Width="100" IsDefault="True" Margin="30" Click="ConnectButton_Click"/>
             <TextBlock Name="ConnectStatus" Text="Connected" Foreground="Green"
                        TextAlignment="Center" FontStyle="Italic" Visibility="Collapsed"/>
         </StackPanel>
         
         <StackPanel Name="SignInPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel Margin="10">
-                <TextBlock Text="Nickname" TextAlignment="Center" Foreground="Gray"/>
+                <TextBlock Text="Nickname" TextAlignment="Center"/>
                 <TextBox Name="NicknameInput" TextAlignment="Center" Margin="0, 3, 0, 0"/>
             </StackPanel>
             <Button Content="Enter" Width="100" Margin="15" Click="SetupButton_Click"/>

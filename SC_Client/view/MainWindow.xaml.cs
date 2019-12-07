@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 
 using SC_Client.src;
 using SC_Client.control;
+using SC_Common.Messages;
 
 namespace SC_Client.view
 {
@@ -23,7 +24,7 @@ namespace SC_Client.view
     public partial class MainWindow : Window
     {
         internal Client LocalClient;
-        private UserControl LastMessage;
+        private string LastFrom; //TEMP
 
         internal MainWindow(Client client)
         {
@@ -31,17 +32,18 @@ namespace SC_Client.view
             LocalClient = client;
 
             LocalClient.NewMessage += LocalClient_NewMessage;
-            LocalClient.UserConnectionAction += LocalClient_UserHasLeft;
+            LocalClient.UserConnectionAction += LocalClient_UserConnectionAction;
 
+            LocalClient.GetLastMessages(AddLastMessages);
         }
 
-        private void LocalClient_UserHasLeft(string from, bool status)
+        private void LocalClient_UserConnectionAction(string user, bool action)
         {
             MessageContainer.Dispatcher.Invoke(() =>
             {
-                EventAlert newMessage = new EventAlert(from, status);
+                EventAlert newMessage = new EventAlert(user, action);
                 MessageContainer.Children.Add(newMessage);
-                LastMessage = newMessage;
+                LastFrom = string.Empty;
             });
         }
 
@@ -51,13 +53,13 @@ namespace SC_Client.view
             {
                 MessageReceived newMessage = null;
 
-                if (LastMessage is MessageReceived)
+                if (LastFrom == from)
                     newMessage = new MessageReceived(text);
                 else
                     newMessage = new MessageReceived(text, from);
 
                 MessageContainer.Children.Add(newMessage);
-                LastMessage = newMessage;
+                LastFrom = from;
             });            
         }
 
@@ -65,16 +67,38 @@ namespace SC_Client.view
         {
             MessageSent newMessage = null;
 
-            if(LastMessage is MessageSent)
+            if (LastFrom == LocalClient.LocalNickname)
                 newMessage = new MessageSent(MessageInput.Text);
             else
                 newMessage = new MessageSent(MessageInput.Text, LocalClient.LocalNickname);
 
-            LastMessage = newMessage;
+            LastFrom = LocalClient.LocalNickname;
             MessageContainer.Children.Add(newMessage);
 
             LocalClient.SendMessage(MessageInput.Text);
             MessageInput.Text = string.Empty;
+        }
+
+        private void AddLastMessages(List<ChatMessage> messages)
+        {
+            foreach (ChatMessage message in messages)
+            {
+                if(message is SystemEvent)
+                {
+                    SystemEvent msgEvet = (SystemEvent)message;
+                    LocalClient_UserConnectionAction(msgEvet.Content, msgEvet.Mode);
+                }
+                else if(message is UserMessage)
+                {
+                    UserMessage userMsg = (UserMessage)message;
+                    LocalClient_NewMessage(userMsg.Content, userMsg.UserName);
+                }
+            }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            LocalClient.Disconnect();
         }
     }
 }
