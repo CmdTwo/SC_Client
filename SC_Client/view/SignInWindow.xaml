@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SC_Client.view"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="Sign In" Height="510" Width="300" FontSize="14"
         ResizeMode="NoResize"
@@ -13,22 +14,21 @@
         <Border Background="{StaticResource PrimaryHueMidBrush}" CornerRadius="30, 30, 0, 30" Height="200" Width="200" Margin="30, 40, 30, 30">
             <TextBlock Foreground="{StaticResource PrimaryHueDarkForegroundBrush}" FontSize="140" Text="S" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         </Border>
-        <StackPanel Name="ConnectPanel" Margin="20" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200">
+        <TextBlock Name="ConnectStatus" Text="Ivalid server IP or Port" Foreground="Firebrick" TextAlignment="Center" FontStyle="Italic" Visibility="Hidden"/>
+        <StackPanel Name="ConnectPanel" Margin="20" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200">
             <StackPanel Margin="10">
-                <TextBlock Text="Server IP : Port" TextAlignment="Center"/>
-                <TextBox Name="ServerAddressInput" Margin="0, 3, 0, 0" TextAlignment="Center"/>
+                <TextBlock Text="Server IP : Port" TextAlignment="Left"/>
+                <TextBox Name="ServerAddressInput" Margin="0, 3, 0, 0" TextAlignment="Center" materialDesign:HintAssist.Hint="127.0.0.1:0000"/>
             </StackPanel>
             <Button Content="Enter" Width="100" IsDefault="True" Margin="30" Click="ConnectButton_Click"/>
-            <TextBlock Name="ConnectStatus" Text="Connected" Foreground="Green"
-                       TextAlignment="Center" FontStyle="Italic" Visibility="Collapsed"/>
         </StackPanel>
         
-        <StackPanel Name="SignInPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Name="SignInPanel" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150">
             <StackPanel Margin="10">
                 <TextBlock Text="Nickname" TextAlignment="Center"/>
-                <TextBox Name="NicknameInput" TextAlignment="Center" Margin="0, 3, 0, 0"/>
+                <TextBox Name="NicknameInput" TextChanged="NicknameInput_TextChanged" TextAlignment="Left" Margin="0, 3, 0, 0" materialDesign:HintAssist.Hint="Somebody"/>
             </StackPanel>
-            <Button Content="Enter" Width="100" Margin="15" Click="SetupButton_Click"/>
+            <Button Name="EnterButton" Content="Enter" IsEnabled="False" Width="100" Margin="15" IsDefault="True" Click="SetupButton_Click"/>
             <TextBlock Name="ResultStatus" Text="COOL!" Foreground="Green"
                        TextAlignment="Center" Visibility="Collapsed"/>
         </StackPanel>

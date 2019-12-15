@@ -18,18 +18,14 @@ namespace SC_Client.control
     /// <summary>
     /// Логика взаимодействия для MessageReceived.xaml
     /// </summary>
-    public partial class MessageReceived : UserControl
+    public partial class AuthMeesageReceived : UserControl
     {
-        public MessageReceived(string message, string from = null)
+        public AuthMeesageReceived(string message)
         {
             InitializeComponent();
             HorizontalAlignment = HorizontalAlignment.Left;
 
             MessageText.Text = message;
-            if (from != null)
-                From.Text = from + " said: ";
-            else
-                From.Visibility = Visibility.Collapsed;
         }
     }
 }

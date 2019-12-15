@@ -68,6 +68,12 @@
     <Compile Include="control\EventAlert.xaml.cs">
       <DependentUpon>EventAlert.xaml</DependentUpon>
     </Compile>
+    <Compile Include="control\AuthMeesageReceived.xaml.cs">
+      <DependentUpon>AuthMeesageReceived.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="control\PMReceived.xaml.cs">
+      <DependentUpon>PMReceived.xaml</DependentUpon>
+    </Compile>
     <Compile Include="control\MessageReceived.xaml.cs">
       <DependentUpon>MessageReceived.xaml</DependentUpon>
     </Compile>
@@ -75,6 +81,9 @@
       <DependentUpon>MessageSent.xaml</DependentUpon>
     </Compile>
     <Compile Include="src\Client.cs" />
+    <Compile Include="view\Alert.xaml.cs">
+      <DependentUpon>Alert.xaml</DependentUpon>
+    </Compile>
     <Compile Include="view\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -82,11 +91,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="control\AuthMeesageReceived.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="control\PMReceived.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="control\MessageReceived.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="control\MessageSent.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="view\Alert.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

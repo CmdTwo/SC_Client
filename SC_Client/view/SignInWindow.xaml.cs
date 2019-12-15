@@ -23,9 +23,12 @@ namespace SC_Client.view
     public partial class SignInWindow : Window
     {
         private Client ClientObj;
+        private string ServerIP = "192.168.100.4";
+        private int ServerPort = 25252;
 
         public SignInWindow()
         {
+            MessageBox.Show("test", "HEADER", MessageBoxButton.OK);
             SC_Common.Register.IsActive = false;
 
             InitializeComponent();
@@ -35,6 +38,7 @@ namespace SC_Client.view
             ClientObj.ConnectionStatusHasChange += ClientObj_ConnectionStatusHasChange;
             ClientObj.HasAdmitted += ClientObj_HasAdmitted;
 
+            ClientObj.Connect(ServerIP, ServerPort);
         }
      
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
@@ -61,19 +65,16 @@ namespace SC_Client.view
 
         private void ClientObj_ConnectionStatusHasChange(bool status)
         {
-            ConnectStatus.Visibility = Visibility.Visible;
             if (status)
             {
-                ConnectStatus.Text = "Connected";
-                ConnectStatus.Foreground = Brushes.Green;
-
+                ConnectStatus.Visibility = Visibility.Hidden;
                 ConnectPanel.Visibility = Visibility.Collapsed;
                 SignInPanel.Visibility = Visibility.Visible;
             }
             else
             {
-                ConnectStatus.Text = "Error";
-                ConnectStatus.Foreground = Brushes.Red;
+                ConnectStatus.Visibility = Visibility.Visible;
+                ConnectPanel.Visibility = Visibility.Visible;
             }
         }
 
@@ -96,5 +97,10 @@ namespace SC_Client.view
         }
 
         #endregion
+
+        private void NicknameInput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            EnterButton.IsEnabled = NicknameInput.Text.Length != 0;
+        }
     }
 }

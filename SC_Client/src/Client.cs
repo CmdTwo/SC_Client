@@ -22,8 +22,9 @@ namespace SC_Client.src
 
         public event Action<bool> ConnectionStatusHasChange;
         public event Action HasAdmitted;
-        public event Action<string, string> NewMessage;
+        public event Action<string, string, bool> NewMessage;
         public event Action<string, bool> UserConnectionAction; //TEMP
+        public event Action<string> AuthCommandHasResponsed;
 
         private Action<List<ChatMessage>> OutHandler;
 
@@ -84,6 +85,7 @@ namespace SC_Client.src
                         package.Arguments[Argument.UserName] as string, false); break; //TEMP
                     case (Event.New_User): UserConnectionAction(
                         package.Arguments[Argument.UserName] as string, true); break; //TEMP
+                    case (Event.New_PM): NewMessageEventHandler(package); break;
                 }
             } else {
                 switch (package.Command)
@@ -91,6 +93,8 @@ namespace SC_Client.src
                     case (Command.User_Setup): SetupResponse(package); break;
                     case (Command.Get_Last_Messages): OutHandler?.Invoke
                             (package.Arguments[Argument.MessageList] as List<ChatMessage>); break;
+                    case (Command.CommandResponse): AuthCommandHasResponsed?.Invoke
+                            (package.Arguments[Argument.Message] as string);; break;
                     default: break;
                 }
             }
@@ -104,7 +108,8 @@ namespace SC_Client.src
         {
             NewMessage?.Invoke(
                 package.Arguments[Argument.Message] as string,
-                package.Arguments[Argument.UserName] as string
+                package.Arguments[Argument.UserName] as string,
+                (bool)package.Arguments[Argument.IsPM]
                 );
         }
 

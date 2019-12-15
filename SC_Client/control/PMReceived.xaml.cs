@@ -18,16 +18,16 @@ namespace SC_Client.control
     /// <summary>
     /// Логика взаимодействия для MessageReceived.xaml
     /// </summary>
-    public partial class MessageReceived : UserControl
+    public partial class PMReceived : UserControl
     {
-        public MessageReceived(string message, string from = null)
+        public PMReceived(string message, string from = null)
         {
             InitializeComponent();
             HorizontalAlignment = HorizontalAlignment.Left;
 
             MessageText.Text = message;
             if (from != null)
-                From.Text = from + " said: ";
+                From.Text = from + " whispers to you...";
             else
                 From.Visibility = Visibility.Collapsed;
         }

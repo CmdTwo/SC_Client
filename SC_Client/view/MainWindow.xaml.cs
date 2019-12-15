@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using SC_Client.src;
 using SC_Client.control;
 using SC_Common.Messages;
+using SC_Common;
 
 namespace SC_Client.view
 {
@@ -33,8 +34,17 @@ namespace SC_Client.view
 
             LocalClient.NewMessage += LocalClient_NewMessage;
             LocalClient.UserConnectionAction += LocalClient_UserConnectionAction;
+            LocalClient.AuthCommandHasResponsed += LocalClient_AuthCommandHasResponsed;
 
             LocalClient.GetLastMessages(AddLastMessages);
+        }
+
+        private void LocalClient_AuthCommandHasResponsed(string text)
+        {
+            MessageContainer.Dispatcher.Invoke(() =>
+            {
+                MessageContainer.Children.Add(new AuthMeesageReceived(text));
+            });
         }
 
         private void LocalClient_UserConnectionAction(string user, bool action)
@@ -47,18 +57,19 @@ namespace SC_Client.view
             });
         }
 
-        private void LocalClient_NewMessage(string text, string from)
+        private void LocalClient_NewMessage(string text, string from, bool isPM)
         {
             MessageContainer.Dispatcher.Invoke(() =>
             {
-                MessageReceived newMessage = null;
+                Control chatMessage = null;
+                string lastFrom = (LastFrom == from) ? null : from;
 
-                if (LastFrom == from)
-                    newMessage = new MessageReceived(text);
+                if (!isPM)
+                    chatMessage = new MessageReceived(text, lastFrom);
                 else
-                    newMessage = new MessageReceived(text, from);
+                    chatMessage = new PMReceived(text, lastFrom);
 
-                MessageContainer.Children.Add(newMessage);
+                MessageContainer.Children.Add(chatMessage);
                 LastFrom = from;
             });            
         }
@@ -67,13 +78,16 @@ namespace SC_Client.view
         {
             MessageSent newMessage = null;
 
-            if (LastFrom == LocalClient.LocalNickname)
-                newMessage = new MessageSent(MessageInput.Text);
-            else
-                newMessage = new MessageSent(MessageInput.Text, LocalClient.LocalNickname);
+            if (MessageInput.Text[0] != ControlChars.TextCommand)
+            {
+                if (LastFrom == LocalClient.LocalNickname)
+                    newMessage = new MessageSent(MessageInput.Text);
+                else
+                    newMessage = new MessageSent(MessageInput.Text, LocalClient.LocalNickname);
 
-            LastFrom = LocalClient.LocalNickname;
-            MessageContainer.Children.Add(newMessage);
+                LastFrom = LocalClient.LocalNickname;
+                MessageContainer.Children.Add(newMessage);
+            }
 
             LocalClient.SendMessage(MessageInput.Text);
             MessageInput.Text = string.Empty;
@@ -91,7 +105,7 @@ namespace SC_Client.view
                 else if(message is UserMessage)
                 {
                     UserMessage userMsg = (UserMessage)message;
-                    LocalClient_NewMessage(userMsg.Content, userMsg.UserName);
+                    LocalClient_NewMessage(userMsg.Content, userMsg.UserName, false);
                 }
             }
         }
