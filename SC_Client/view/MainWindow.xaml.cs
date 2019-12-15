@@ -26,17 +26,43 @@ namespace SC_Client.view
     {
         internal Client LocalClient;
         private string LastFrom; //TEMP
+        private Dictionary<string, OnlineUser> OnlineUserDict;
 
         internal MainWindow(Client client)
         {
             InitializeComponent();
+            OnlineUserDict = new Dictionary<string, OnlineUser>();
             LocalClient = client;
 
             LocalClient.NewMessage += LocalClient_NewMessage;
             LocalClient.UserConnectionAction += LocalClient_UserConnectionAction;
             LocalClient.AuthCommandHasResponsed += LocalClient_AuthCommandHasResponsed;
+            LocalClient.HasBanned += LocalClient_HasBanned;
+            LocalClient.HasKicked += LocalClient_HasKicked;
 
             LocalClient.GetLastMessages(AddLastMessages);
+        }
+
+        private void LocalClient_HasKicked(string reason)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                Alert alertWin = new Alert("You have been " +
+                    "kicked from the server.\nReason: " + reason);
+                alertWin.ShowDialog();
+                this.Close();
+            });
+        }
+
+        private void LocalClient_HasBanned(string reason)
+        {
+            this.Dispatcher.Invoke(() =>
+            {           
+                Alert alertWin = new Alert("You have been " +
+                    "banned on the server.\nReason: " + reason);
+                alertWin.ShowDialog();
+                this.Close();
+            });
         }
 
         private void LocalClient_AuthCommandHasResponsed(string text)
@@ -54,6 +80,17 @@ namespace SC_Client.view
                 EventAlert newMessage = new EventAlert(user, action);
                 MessageContainer.Children.Add(newMessage);
                 LastFrom = string.Empty;
+                if (action)
+                {
+                    OnlineUser onlineUser = new OnlineUser(user, user == LocalClient.LocalNickname);
+                    OnlineUserDict.Add(user, onlineUser);
+                    UserBank.Children.Add(onlineUser);
+                }
+                else if(OnlineUserDict.ContainsKey(user))
+                {
+                    UserBank.Children.Remove(OnlineUserDict[user]);
+                    OnlineUserDict.Remove(user);
+                }
             });
         }
 
@@ -78,7 +115,8 @@ namespace SC_Client.view
         {
             MessageSent newMessage = null;
 
-            if (MessageInput.Text[0] != ControlChars.TextCommand)
+            if ((MessageInput.Text.Substring(0, 3) == ChatCommandHelper.AvailableCommand) ||
+                MessageInput.Text[0] != ChatCommandHelper.SymbolOfCommand)
             {
                 if (LastFrom == LocalClient.LocalNickname)
                     newMessage = new MessageSent(MessageInput.Text);
@@ -112,6 +150,16 @@ namespace SC_Client.view
 
         private void Window_Closed(object sender, EventArgs e)
         {
+            ExitFromChat();
+        }
+
+        private void ExitFromChat()
+        {
+            LocalClient.NewMessage -= LocalClient_NewMessage;
+            LocalClient.UserConnectionAction -= LocalClient_UserConnectionAction;
+            LocalClient.AuthCommandHasResponsed -= LocalClient_AuthCommandHasResponsed;
+            LocalClient.HasBanned -= LocalClient_HasBanned;
+            LocalClient.HasKicked -= LocalClient_HasKicked;
             LocalClient.Disconnect();
         }
     }

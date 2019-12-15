@@ -74,6 +74,9 @@
     <Compile Include="control\PMReceived.xaml.cs">
       <DependentUpon>PMReceived.xaml</DependentUpon>
     </Compile>
+    <Compile Include="control\OnlineUser.xaml.cs">
+      <DependentUpon>OnlineUser.xaml</DependentUpon>
+    </Compile>
     <Compile Include="control\MessageReceived.xaml.cs">
       <DependentUpon>MessageReceived.xaml</DependentUpon>
     </Compile>
@@ -96,6 +99,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="control\PMReceived.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="control\OnlineUser.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

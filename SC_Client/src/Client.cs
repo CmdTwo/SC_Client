@@ -12,7 +12,7 @@ using SC_Common.Messages;
 
 namespace SC_Client.src
 {
-    internal sealed class Client
+    public sealed class Client
     {
         private int ServerPort;
         private IPAddress ServerIP;
@@ -21,12 +21,22 @@ namespace SC_Client.src
         private PackageManager PackageManag;
 
         public event Action<bool> ConnectionStatusHasChange;
-        public event Action HasAdmitted;
+        public event Action<bool, string> HasAdmitted;
         public event Action<string, string, bool> NewMessage;
         public event Action<string, bool> UserConnectionAction; //TEMP
         public event Action<string> AuthCommandHasResponsed;
+        public event Action<string> HasBanned;
+        public event Action<string> HasKicked;
+        public event Action<bool> CheckBlockIPResponsed;
 
         private Action<List<ChatMessage>> OutHandler;
+
+        public bool IsConnected { get
+            {
+                if (Handler == null) return false;
+                return Handler.Connected;
+            }
+        }
 
         public int LocalID { get; private set; }
         public string LocalNickname { get; private set; }
@@ -86,6 +96,10 @@ namespace SC_Client.src
                     case (Event.New_User): UserConnectionAction(
                         package.Arguments[Argument.UserName] as string, true); break; //TEMP
                     case (Event.New_PM): NewMessageEventHandler(package); break;
+                    case (Event.HasBanned): HasBanned?.Invoke(package.Arguments
+                        [Argument.Message] as string); break;
+                    case (Event.HasKicked): HasKicked?.Invoke(package.Arguments
+                        [Argument.Message] as string); break;
                 }
             } else {
                 switch (package.Command)
@@ -95,11 +109,14 @@ namespace SC_Client.src
                             (package.Arguments[Argument.MessageList] as List<ChatMessage>); break;
                     case (Command.CommandResponse): AuthCommandHasResponsed?.Invoke
                             (package.Arguments[Argument.Message] as string);; break;
+                    case (Command.CheckBlockIP): CheckBlockIPResponsed?.Invoke
+                            ((bool)(package.Arguments[Argument.IsAdmitted])); break;
                     default: break;
                 }
             }
 
-            PackageManag.ReceivePackage(Handler, ReceiveCallback);
+            if(IsConnected)
+                PackageManag.ReceivePackage(Handler, ReceiveCallback);
         }
 
         #region Event
@@ -119,10 +136,19 @@ namespace SC_Client.src
 
         private void SetupResponse(PackageArgs package)
         {
-            LocalID = (int)package.Arguments[Argument.UserID];
-            LocalNickname = package.Arguments[Argument.UserName] as string;
+            bool result = (bool)package.Arguments[Argument.IsAdmitted];
+            string message = null;
+            if (result)
+            {
+                LocalID = (int)package.Arguments[Argument.UserID];
+                LocalNickname = package.Arguments[Argument.UserName] as string;
+            }
+            else
+            {
+                message = package.Arguments[Argument.Message] as string;
+            }
 
-            HasAdmitted?.Invoke();
+            HasAdmitted?.Invoke(result, message);
         }
 
         #endregion
@@ -138,6 +164,11 @@ namespace SC_Client.src
         #endregion
 
         #region API
+
+        public string GetIP()
+        {
+            return (Handler.LocalEndPoint as IPEndPoint).Address.ToString();
+        }
 
         public void SetNickAndContinue(string nickName)
         {
@@ -174,6 +205,21 @@ namespace SC_Client.src
             {
                 PackageType = PackageType.Command,
                 Command = Command.Get_Last_Messages
+            };
+            PackageManag.SendPackage(Handler, package, null);
+        }
+
+        public void CheckIP()
+        {
+            string ip = GetIP();
+            PackageArgs package = new PackageArgs()
+            {
+                PackageType = PackageType.Command,
+                Command = Command.CheckBlockIP,
+                Arguments = new Dictionary<Argument, object>
+                {
+                    { Argument.IP, ip }
+                }
             };
             PackageManag.SendPackage(Handler, package, null);
         }

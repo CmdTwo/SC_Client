@@ -6,11 +6,12 @@
         xmlns:local="clr-namespace:SC_Client.view"
         mc:Ignorable="d"
         Title="Alert"
-        Width="400"
-        Height="150"
-        ResizeMode="NoResize">
-    <Grid>
-        <TextBlock Name="ContentTextBox" Text="Some text" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="30"/>
-        <Button Content="OK" Width="100" VerticalAlignment="Bottom" Margin="10" Click="Button_Click"/>
-    </Grid>
+        Width="350"
+        Height="200"
+        ResizeMode="NoResize"
+        Name="AlertWin">
+    <StackPanel>
+        <TextBlock FontSize="14" Name="ContentTextBox" Text="Some text" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="30, 30, 30, 0"/>
+        <Button Content="OK" Width="100" VerticalAlignment="Bottom" Margin="20" Click="Button_Click"/>
+    </StackPanel>
 </Window>

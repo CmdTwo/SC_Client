@@ -27,20 +27,23 @@ namespace SC_Client.view
         private int ServerPort = 25252;
 
         public SignInWindow()
-        {
-            MessageBox.Show("test", "HEADER", MessageBoxButton.OK);
-            SC_Common.Register.IsActive = false;
-
+        {           
             InitializeComponent();
+
+            SC_Common.Register.IsActive = false;
             Closing += SignInWindow_Closing;
 
             ClientObj = new Client();
             ClientObj.ConnectionStatusHasChange += ClientObj_ConnectionStatusHasChange;
             ClientObj.HasAdmitted += ClientObj_HasAdmitted;
+            ClientObj.CheckBlockIPResponsed += ClientObj_CheckBlockIPResponsed;
 
             ClientObj.Connect(ServerIP, ServerPort);
+
+            if (ClientObj.IsConnected)
+                ClientObj.CheckIP();
         }
-     
+
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
             //TEMP
@@ -49,6 +52,9 @@ namespace SC_Client.view
                 int sepIndex = ServerAddressInput.Text.IndexOf(':');
                 ClientObj.Connect(ServerAddressInput.Text.Substring(0, sepIndex),
                     int.Parse(ServerAddressInput.Text.Substring(sepIndex + 1)));
+
+                if(ClientObj.IsConnected)
+                    ClientObj.CheckIP();
             }
         }
 
@@ -78,22 +84,43 @@ namespace SC_Client.view
             }
         }
 
-        private void ClientObj_HasAdmitted()
+        private void ClientObj_HasAdmitted(bool isAdmitted, string message)
         {
             ResultStatus.Dispatcher.Invoke(() => 
             {
-                ResultStatus.Visibility = Visibility.Visible;
-                MainWindow main = new MainWindow(ClientObj);
-                main.Show();
-                this.Close();
+                if (isAdmitted)
+                {
+                    MainWindow main = new MainWindow(ClientObj);
+                    main.Show();
+                    this.Close();
+                }
+                else
+                {
+                    Alert alertWin = new Alert(message);
+                    alertWin.ShowDialog();
+                }
             });            
         }
 
+        private void ClientObj_CheckBlockIPResponsed(bool isAdmintted)
+        {
+            if(!isAdmintted)
+            {
+                this.Dispatcher.Invoke(() =>
+                {
+                    ClientObj.Disconnect();
+                    Alert alertWin = new Alert("You are banned on this server.", "Ops!");
+                    alertWin.ShowDialog();                    
+                    this.Close();
+                });
+            }
+        }
 
         private void SignInWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             ClientObj.ConnectionStatusHasChange -= ClientObj_ConnectionStatusHasChange;
             ClientObj.HasAdmitted -= ClientObj_HasAdmitted;
+            ClientObj.CheckBlockIPResponsed -= ClientObj_CheckBlockIPResponsed;
         }
 
         #endregion

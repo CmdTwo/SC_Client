@@ -19,17 +19,16 @@ namespace SC_Client.view
     /// </summary>
     public partial class Alert : Window
     {
-        public event Action OnClick;
-
-        public Alert(string text)
+        public Alert(string text, string header = "Alert")
         {
             InitializeComponent();
             ContentTextBox.Text = text;
+            AlertWin.Title = header;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            OnClick?.Invoke();
+            this.Close();
         }
     }
 }
